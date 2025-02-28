@@ -18,43 +18,36 @@ concurrency:
 
 jobs:
   deploy:
-    environment:
-      name: github-pages  # 📌 使用官方推荐的环境名称
-      url: ${{ steps.deployment.outputs.page_url }}
-    
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4  # 📌 升级至最新稳定版
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4  # 📌 升级至最新版
+        uses: actions/setup-node@v4
         with:
-          node-version: 20  # 📌 推荐使用 LTS 版本
+          node-version: 20
           cache: 'npm'
-          cache-dependency-path: package-lock.json  # 📌 明确缓存依赖文件
 
       - name: Install dependencies
-        run: npm ci  # 📌 使用 ci 代替 install 保证依赖一致性
+        run: npm ci
 
       - name: Build project
         run: npm run build
         env:
-          NODE_ENV: production  # 📌 明确生产环境构建
+          NODE_ENV: production
+
+      - name: Verify build output
+        run: ls -R ./dist  # 调试产物路径
 
       - name: Configure Pages
-        uses: actions/configure-pages@v4  # 📌 升级至最新版
-        with:
-          static_site_generator: "custom"  # 📌 明确指定自定义构建
+        uses: actions/configure-pages@v4
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3  # 📌 升级至最新推荐版本
+        uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
-          retention-days: 3  # 📌 设置产物保留时间
+          retention-days: 3
 
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v3  # 📌 升级至最新版
-        timeout-minutes: 5  # 📌 添加超时限制
+        uses: actions/deploy-pages@v3
