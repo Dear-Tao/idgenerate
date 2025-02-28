@@ -23,7 +23,7 @@
             <span class="value">{{ address }}</span>
           </div>
         </div>
-        <div class="photo-placeholder">
+        <div class="photo-placeholder" @click="$emit('avatar-click')">
           <img v-if="avatar" :src="avatar" alt="头像" class="avatar-image" />
           <el-icon v-else size="64"><Avatar /></el-icon>
         </div>

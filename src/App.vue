@@ -88,7 +88,7 @@ onMounted(() => {
           <el-button type="primary" @click="generatePersonalInfo">生成信息</el-button>
         </div>
       </div>
-      <IdCard v-bind="personalInfo" />
+      <IdCard v-bind="personalInfo" @avatar-click="handleAvatarClick" />
     </el-card>
 
     <!-- 银行卡信息生成部分 -->
