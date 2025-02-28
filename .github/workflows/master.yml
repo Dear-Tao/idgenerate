@@ -17,37 +17,31 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # 单次部署的工作描述
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Node.js
+      - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
-
       - name: Install dependencies
         run: npm ci
-
-      - name: Build project
+      - name: Build
         run: npm run build
-        env:
-          NODE_ENV: production
-
-      - name: Verify build output
-        run: ls -R ./dist  # 调试产物路径
-
-      - name: Configure Pages
+      - name: Setup Pages
         uses: actions/configure-pages@v4
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
-          retention-days: 3
-
+          # Upload dist folder
+          path: './dist'
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v3
+        id: deployment
+        uses: actions/deploy-pages@v4
