@@ -31,7 +31,6 @@
 - Vue 3
 - Vite
 - Element Plus
-- bankcard-validator
 
 ## 开发环境设置
 
