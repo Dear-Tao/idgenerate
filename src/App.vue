@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { generateChineseName, generateIdNumber, generateNationality, generateAddress, generateIssuingAuthority, generateValidityPeriod } from './utils/idGenerator'
 import { generateBankInfo } from './utils/bankGenerator'
 import IdCard from './components/IdCard.vue'
@@ -63,6 +63,10 @@ const avatarInput = ref(null)
 const handleAvatarClick = () => {
   avatarInput.value.click()
 }
+onMounted(() => {
+  generatePersonalInfo()
+  generateBankCards()
+})
 </script>
 
 <template>
