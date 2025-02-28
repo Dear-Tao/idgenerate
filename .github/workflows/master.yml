@@ -1,56 +1,60 @@
-# This is a basic workflow to help you get started with Actions
+name: GitHub Pages CI
 
-name: CI
-
-# Controls when the workflow will run
 on:
- # 仅在推送到默认分支时运行。
   push:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
-
-  # 这个选项可以使你手动在 Action tab 页面触发工作流
   workflow_dispatch:
 
-# 设置 GITHUB_TOKEN 的权限，以允许部署到 GitHub Pages。
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# 允许一个并发的部署
 concurrency:
   group: 'pages'
   cancel-in-progress: true
 
 jobs:
-  # 单次部署的工作描述
   deploy:
     environment:
-      name: idgenerate
+      name: github-pages  # 📌 使用官方推荐的环境名称
       url: ${{ steps.deployment.outputs.page_url }}
+    
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Set up Node
-        uses: actions/setup-node@v3
+      - name: Checkout code
+        uses: actions/checkout@v4  # 📌 升级至最新稳定版
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4  # 📌 升级至最新版
         with:
-          node-version: 22
+          node-version: 20  # 📌 推荐使用 LTS 版本
           cache: 'npm'
+          cache-dependency-path: package-lock.json  # 📌 明确缓存依赖文件
+
       - name: Install dependencies
-        run: npm install
-      - name: Build
+        run: npm ci  # 📌 使用 ci 代替 install 保证依赖一致性
+
+      - name: Build project
         run: npm run build
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        env:
+          NODE_ENV: production  # 📌 明确生产环境构建
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v4  # 📌 升级至最新版
         with:
-          # Upload dist repository
-          path: './dist'
+          static_site_generator: "custom"  # 📌 明确指定自定义构建
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3  # 📌 升级至最新推荐版本
+        with:
+          path: ./dist
+          retention-days: 3  # 📌 设置产物保留时间
+
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
-
+        uses: actions/deploy-pages@v3  # 📌 升级至最新版
+        timeout-minutes: 5  # 📌 添加超时限制
