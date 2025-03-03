@@ -1,7 +1,7 @@
 <template>
   <div class="id-card-container">
     <!-- 身份证正面 -->
-    <div class="id-card front">
+    <div class="id-card front" ref="frontCard">
       <div class="content">
         <div class="info">
           <div class="info-item">
@@ -35,7 +35,7 @@
     </div>
 
     <!-- 身份证背面 -->
-    <div class="id-card back">
+    <div class="id-card back" ref="backCard">
       <div class="back-content">
         <div class="validity">
           <div class="header">
@@ -65,6 +65,11 @@
 
 <script setup>
 import { Avatar } from '@element-plus/icons-vue'
+import { ref } from 'vue'
+import html2canvas from 'html2canvas'
+
+const frontCard = ref(null)
+const backCard = ref(null)
 
 defineProps({
   name: {
@@ -174,7 +179,6 @@ defineProps({
 
 .info {
   flex: 1;
-  /* padding-right: 25px; */
   margin-top: 30px;
 }
 
@@ -220,7 +224,6 @@ defineProps({
   font-weight: bold;
   letter-spacing: 2px;
 }
-
 
 .address {
   margin-top: 12px;
@@ -292,7 +295,4 @@ defineProps({
 .info-col .value {
   padding-left: 20px;
 }
-
-
-
 </style>

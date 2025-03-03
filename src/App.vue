@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { generateChineseName, generateIdNumber, generateNationality, generateAddress, generateIssuingAuthority, generateValidityPeriod } from './utils/idGenerator'
 import { generateBankInfo } from './utils/bankGenerator'
 import IdCard from './components/IdCard.vue'
+import html2canvas from 'html2canvas'
 
 const personalInfo = ref({
   name: '',
@@ -27,6 +28,11 @@ const creditCardInfo = ref({
   cardNumber: '',
   cardType: 'credit'
 })
+
+const debitCardRef = ref(null)
+const creditCardRef = ref(null)
+const idCardFrontRef = ref(null)
+const idCardBackRef = ref(null)
 
 const generatePersonalInfo = () => {
   personalInfo.value.name = generateChineseName()
@@ -58,11 +64,49 @@ const handleAvatarUpload = async (event) => {
     reader.readAsDataURL(file)
   }
 }
+
+const downloadIdCard = async (side) => {
+  await nextTick()
+  const idCardComponent = idCardFrontRef.value
+  const element = side === 'front' ? idCardComponent.$refs.frontCard : idCardComponent.$refs.backCard
+  try {
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: null
+    })
+    const link = document.createElement('a')
+    link.download = `身份证${side === 'front' ? '正面' : '背面'}.png`
+    link.href = canvas.toDataURL('image/png')
+    link.click()
+  } catch (error) {
+    console.error('导出图片失败:', error)
+  }
+}
+
+const downloadBankCard = async (type) => {
+  const element = type === 'debit' ? debitCardRef.value : creditCardRef.value
+  try {
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: null
+    })
+    const link = document.createElement('a')
+    link.download = `${type === 'debit' ? '储蓄卡' : '信用卡'}.png`
+    link.href = canvas.toDataURL('image/png')
+    link.click()
+  } catch (error) {
+    console.error('导出图片失败:', error)
+  }
+}
+
 const avatarInput = ref(null)
 
 const handleAvatarClick = () => {
   avatarInput.value.click()
 }
+
 onMounted(() => {
   generatePersonalInfo()
   generateBankCards()
@@ -75,31 +119,35 @@ onMounted(() => {
       <div class="card-header">
         <h2>身份证信息生成器</h2>
         <div class="header-actions">
-          <el-button @click="handleAvatarClick">
-            上传头像
-          </el-button>
+          <el-button @click="downloadIdCard('front')">下载正面</el-button>
+          <el-button @click="downloadIdCard('back')">下载背面</el-button>
+          <el-button @click="handleAvatarClick">上传头像</el-button>
           <input
             ref="avatarInput"
-            type="file"
             class="avatar-input"
             accept="image/*"
             @change="handleAvatarUpload"
+            type="file"
           />
           <el-button type="primary" @click="generatePersonalInfo">生成信息</el-button>
         </div>
       </div>
-      <IdCard v-bind="personalInfo" @avatar-click="handleAvatarClick" />
+      <IdCard v-bind="personalInfo" @avatar-click="handleAvatarClick" ref="idCardFrontRef" />
     </el-card>
 
     <!-- 银行卡信息生成部分 -->
     <el-card class="info-card">
       <div class="card-header">
         <h2>银行卡信息生成器</h2>
-        <el-button type="primary" @click="generateBankCards">生成银行卡</el-button>
+        <div class="header-actions">
+          <el-button @click="downloadBankCard('debit')">下载储蓄卡</el-button>
+          <el-button @click="downloadBankCard('credit')">下载信用卡</el-button>
+          <el-button type="primary" @click="generateBankCards">生成银行卡</el-button>
+        </div>
       </div>
       <div class="bank-cards-container">
         <!-- 储蓄卡 -->
-        <div v-if="debitCardInfo.bankName" class="bank-card debit-card">
+        <div v-if="debitCardInfo.bankName" class="bank-card debit-card" ref="debitCardRef">
           <div class="bank-card-content">
             <div class="bank-name">{{ debitCardInfo.bankName }}</div>
             <div class="card-type">储蓄卡</div>
@@ -107,7 +155,7 @@ onMounted(() => {
           </div>
         </div>
         <!-- 信用卡 -->
-        <div v-if="creditCardInfo.bankName" class="bank-card credit-card">
+        <div v-if="creditCardInfo.bankName" class="bank-card credit-card" ref="creditCardRef">
           <div class="bank-card-content">
             <div class="bank-name">{{ creditCardInfo.bankName }}</div>
             <div class="card-type">信用卡</div>

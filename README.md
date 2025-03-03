@@ -37,6 +37,7 @@
 - Vue 3
 - Vite
 - Element Plus
+- Node.js v18.x
 
 ## 开发环境设置
 
